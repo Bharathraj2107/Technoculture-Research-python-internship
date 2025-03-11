@@ -1,0 +1,14 @@
+#settings.py
+DATABASES={
+    'default':{
+        'ENGINE':'django.db.backends.mysql',
+        'NAME':'taskflow_db',
+        'USER':'root',
+        'PASSWORD':'root',
+        'HOST':'localhost',
+        'PORT':'3306',
+    }
+}
+INSTALLED_APPS=[
+    'myapp',
+]
