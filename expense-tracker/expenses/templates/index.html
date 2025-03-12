@@ -1,23 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
     <h1>Expense Tracker</h1>
-    <form id="expense-form">
-        <input type="text" id="name" placeholder="Expense Name">
-        <input type="number" id="amount" placeholder="Amount">
-        <select id="category">
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Other">Other</option>
-        </select>
+    <form id="expenseForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="number" id="amount" placeholder="Amount" required>
+        <input type="text" id="category" placeholder="Category" required>
         <button type="submit">Add Expense</button>
     </form>
-    <div id="expense-list"></div>
-    <script src="app.js"></script>
+    <ul id="expenseList"></ul>
+
+    <script>
+        const form = document.getElementById('expenseForm');
+        const expenseList = document.getElementById('expenseList');
+
+        async function fetchExpenses() {
+            const response = await fetch('http://127.0.0.1:9000/api/expenses/');
+            const expenses = await response.json();
+            expenseList.innerHTML = '';
+            expenses.forEach(exp => {
+                const li = document.createElement('li');
+                li.textContent = `${exp.name} - $${exp.amount} (${exp.category})`;
+                expenseList.appendChild(li);
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+
+            await fetch('http://127.0.0.1:9000/api/expenses/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, amount, category }),
+            });
+
+            form.reset();
+            fetchExpenses();
+        });
+
+        fetchExpenses();
+    </script>
 </body>
 </html>
