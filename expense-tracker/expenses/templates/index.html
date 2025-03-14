@@ -9,46 +9,164 @@
 </head>
 <body>
     <h1>Expense Tracker</h1>
-    <form id="expenseForm">
-        <input type="text" id="name" placeholder="Name" required>
-        <input type="number" id="amount" placeholder="Amount" required>
-        <input type="text" id="category" placeholder="Category" required>
-        <button type="submit">Add Expense</button>
-    </form>
+    <p>Track your daily expenses and stay within budget!</p>
+
+    <!-- Budget Input -->
+    <label for="budget">Set Budget:</label>
+    <input type="number" id="budget" placeholder="Enter budget">
+    <button onclick="setBudget()">Set Budget</button>
+    <p><strong>Current Budget: </strong><span id="currentBudget">$0</span></p>
+
+    <hr>
+
+    <!-- Add Expense Form -->
+    <h2>Add Expense</h2>
+    <label for="name">Product Name:</label>
+    <input type="text" id="name" placeholder="Enter product name">
+
+    <label for="amount">Amount:</label>
+    <input type="number" id="amount" placeholder="Enter amount">
+
+    <label for="category">Category:</label>
+    <select id="category">
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <label for="date">Date:</label>
+    <input type="date" id="date">
+
+    <button onclick="addExpense()">Add Expense</button>
+
+    <p id="errorMessage" style="color: red;"></p>
+
+    <hr>
+
+    <!-- Filter Expenses -->
+    <h2>Filter Expenses</h2>
+    <label for="filterCategory">Filter by Category:</label>
+    <select id="filterCategory">
+        <option value="All">All</option>
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Other">Other</option>
+    </select>
+    <button onclick="filterExpenses()">Filter</button>
+
+    <hr>
+
+    <!-- Expenses List -->
+    <h2>Expenses List</h2>
     <ul id="expenseList"></ul>
 
+    <!-- Download CSV -->
+    <button onclick="downloadCSV()">Download CSV</button>
+
     <script>
-        const form = document.getElementById('expenseForm');
-        const expenseList = document.getElementById('expenseList');
+        const API_URL = "http://127.0.0.1:9000/api/expenses/";
 
-        async function fetchExpenses() {
-            const response = await fetch('http://127.0.0.1:9000/api/expenses/');
-            const expenses = await response.json();
-            expenseList.innerHTML = '';
-            expenses.forEach(exp => {
-                const li = document.createElement('li');
-                li.textContent = `${exp.name} - $${exp.amount} (${exp.category})`;
-                expenseList.appendChild(li);
-            });
-        }
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const category = document.getElementById('category').value;
-
-            await fetch('http://127.0.0.1:9000/api/expenses/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, amount, category }),
-            });
-
-            form.reset();
+        //  Ensure fresh data is fetched on page load
+        document.addEventListener("DOMContentLoaded", () => {
             fetchExpenses();
+            getBudget();
         });
 
-        fetchExpenses();
+        async function setBudget() {
+            const amount = document.getElementById("budget").value;
+            if (!amount) {
+                alert("Please enter a valid budget amount.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}budget/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: parseFloat(amount) })
+                });
+
+                const data = await response.json();
+                document.getElementById("currentBudget").innerText = `$${data.budget}`;
+                alert("Budget set successfully!");
+            } catch (error) {
+                console.error("Error setting budget:", error);
+            }
+        }
+
+        async function getBudget() {
+            try {
+                const response = await fetch(`${API_URL}budget/?t=${new Date().getTime()}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById("currentBudget").innerText = `$${data.budget}`;
+                }
+            } catch (error) {
+                console.error("Error fetching budget:", error);
+            }
+        }
+
+        async function addExpense() {
+            const name = document.getElementById("name").value.trim();
+            const amount = parseFloat(document.getElementById("amount").value);
+            const category = document.getElementById("category").value;
+            const date = document.getElementById("date").value;
+            const errorMessage = document.getElementById("errorMessage");
+
+            if (!name || !amount || !category || !date) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}add/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, amount, category, date })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert("Expense added successfully!");
+                    errorMessage.innerText = "";
+                    fetchExpenses(); // Refresh list
+                } else {
+                    errorMessage.innerText = data.detail || "Failed to add expense.";
+                }
+            } catch (error) {
+                console.error("Error adding expense:", error);
+            }
+        }
+
+        async function fetchExpenses(category = "All") {
+            try {
+                const response = await fetch(`${API_URL}list/?category=${category}&t=${new Date().getTime()}`);
+                const expenses = await response.json();
+
+                const expenseList = document.getElementById("expenseList");
+                expenseList.innerHTML = ""; //  Clear UI before updating
+                expenses.forEach(exp => {
+                    const li = document.createElement("li");
+                    li.textContent = `${exp.name} - $${exp.amount} (${exp.category})`;
+                    expenseList.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching expenses:", error);
+            }
+        }
+
+        function filterExpenses() {
+            const category = document.getElementById("filterCategory").value;
+            fetchExpenses(category);
+        }
+
+        async function downloadCSV() {
+            window.location.href = `${API_URL}download/`;
+        }
     </script>
 </body>
 </html>

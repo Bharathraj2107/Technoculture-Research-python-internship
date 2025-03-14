@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
+import secrets
+
+SECRET_KEY = secrets.token_urlsafe(50)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = 'django-insecure-@mwcw!yawo*_5w%&e18ifs-ki%1um(qexy5y(*6f63)r_5ari*'
-DEBUG = True
-ALLOWED_HOSTS = []
+ROOT_URLCONF = "expense.urls"
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -14,12 +14,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'expenses',  # Ensure the expenses app is registered
+    'expenses',
+    'corsheaders',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -27,12 +31,22 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'expense.urls'
+DEBUG = True
+
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8001"]
+
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = []  # Keep empty since static files are inside the app folder
+STATIC_ROOT = BASE_DIR / "staticfiles"  # For production (run collectstatic)
+
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Add templates directory
+        'DIRS': [BASE_DIR / "expenses" / "templates"],  # Set explicit path
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -44,33 +58,3 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'expense.wsgi.application'
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'expense_db',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
-
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
-
-STATIC_URL = '/static/'
-# STATICFILES_DIRS = [BASE_DIR / "static"]  # Add static files directory
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
