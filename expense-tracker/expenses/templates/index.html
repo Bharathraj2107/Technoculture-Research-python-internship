@@ -87,10 +87,10 @@
                 const response = await fetch(`${API_URL}budget/`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount: parseFloat(amount) })
+                    body: JSON.stringify({ amount: parseFloat(amount) })//It converts a JavaScript object into a JSON string so that it can be sent over HTTP.For example, if amount is 50, the JSON string will be {"amount": 50}.
                 });
 
-                const data = await response.json();
+                const data = await response.json();//It converts the JSON string returned by the server into a JavaScript object.
                 document.getElementById("currentBudget").innerText = `$${data.budget}`;
                 alert("Budget set successfully!");
             } catch (error) {
@@ -100,7 +100,7 @@
 
         async function getBudget() {
             try {
-                const response = await fetch(`${API_URL}budget/?t=${new Date().getTime()}`);
+                const response = await fetch(`${API_URL}budget/?t=${new Date().getTime()}`);//t query parameter it generates the current time and date so every millisecond the url changes and new updated data is fetched
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById("currentBudget").innerText = `$${data.budget}`;

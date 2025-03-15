@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-expenses = []  # Reset expenses on restart
-budget = 0
+expenses = []  
+budget = 0#global variables initializing
 
 logger.info("Server started. Expenses list reset.")
 
@@ -24,8 +24,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Expense(BaseModel):
-    name: str
+class Expense(BaseModel):#The Expense BaseModel is for API request validation and ensures all fields are required.
+    name: str#name must be a string or else it produces an error This model is used to validate incoming request data for the /api/expenses/add/ endpoint.
     amount: float
     category: str
     date: str
@@ -35,10 +35,10 @@ class Budget(BaseModel):
 
 # Reset data on server restart
 expenses = []  # This should be empty when the server starts
-budget = 0  # Reset budget
+budget = 0  # 
 
 @app.post("/api/expenses/budget/")
-async def set_budget(data: Budget):
+async def set_budget(data: Budget):#The amount inside data must be a float, or it will throw a validation error.data must match the structure defined in the Budget model.
     global budget
     budget = data.amount
     return {"budget": budget}
@@ -65,7 +65,7 @@ async def get_expenses(category: str = "All"):
 async def download_expenses():
     filename = "expenses.csv"
     with open(filename, "w", newline="") as file:
-        writer = csv.writer(file)
+        writer = csv.writer(file)#Creates a CSV writer object that will allow us to write data into the file
         writer.writerow(["Name", "Amount", "Category", "Date"])
         for exp in expenses:
             writer.writerow([exp.name, exp.amount, exp.category, exp.date])
