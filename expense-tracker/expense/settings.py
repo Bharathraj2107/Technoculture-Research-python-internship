@@ -30,6 +30,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'expense_tracker_db', 
+        'USER': 'root',     
+        'PASSWORD': 'root', 
+        'HOST': '127.0.0.1',          
+        'PORT': '3306',                
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        },
+    }
+}
 
 DEBUG = True
 
